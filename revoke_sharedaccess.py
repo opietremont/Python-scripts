@@ -8,6 +8,7 @@ import subprocess
 import tkinter as tk
 import tkinter.filedialog
 import re
+import time
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -88,6 +89,7 @@ with open(EMAIL_FILE, "r") as file_obj:
 			continue
 
 		list_path_file = DIR_PATH + "/" + line.rstrip('\n') +".txt"
+		log_revoke_file = DIR_PATH + "/revoke-" + time.strftime("%Y%m%d-%H%M", time.gmtime()) +".log"
 
 		print("\nuser: " + line.rstrip('\n'))
 		print("number of files: " + str(nb_file_list))
@@ -119,19 +121,24 @@ with open(EMAIL_FILE, "r") as file_obj:
 
 		while True:
 			try:
-				doit_answer = input("Voulez vous revoquer les droits des utilisateurs concernés ? y/n: ")
-				if (doit_answer.lower() == "y") or (doit_answer.lower() == "n"):
+				revoke_answer = input("Voulez vous revoquer les droits des utilisateurs concernés ? y/n: ")
+				if (revoke_answer.lower() == "y") or (revoke_answer.lower() == "n"):
 					break
 			except ValueError:
 				pass
 			print('\nIncorrect input, try again')
 
-		if doit_answer.lower() == "y":
+		if revoke_answer.lower() == "y":
+			logrevoke_f = open(log_revoke_file, "a")
 			print('\nLoading data, please wait')
-			for id_file in id_file_list:
+			for item in id_file_list:
 				try:
+					id_file = item.split(None, 1)[0]
 					# print("cmd : gdrive share revoke " + id_file.split(None, 1)[0] + " " + perm_id)
-					status = revoke_drivesharedaccess(perm_id, id_file.split(None, 1)[0])
-					print(status[0])
+					status = revoke_drivesharedaccess(perm_id, id_file)
+					print(id_file, ": ", status[0])
+					log_data = id_file + ": " + status[0] + "\n"
+					logrevoke_f.write(log_data)
 				except IndexError:
 					pass
+			logrevoke_f.close()
