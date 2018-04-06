@@ -1,6 +1,6 @@
 #!/usr/local/bin/python3
-"""This script prompts a user to revoke user in gdrive shared file
- bla bla bla"""
+"""Ce script permet de révoquer les accès de partage d'un utilisateur à partir de son adresse mail. 
+Il demande un fichier contenant une liste d'adresse mail et utilise l'outil gdrive https://github.com/prasmussen/gdrive afin de supprimer les accès."""
 
 import os
 import shutil
