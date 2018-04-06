@@ -1,14 +1,12 @@
 #!/usr/local/bin/python3
-"""This script revoke user sharing rights in file and folder from Google Drive. It use gdrive tool 
-from https://github.com/prasmussen/gdrive and it ask a list of email from a file."""
+"""This script prompts a user to revoke user in gdrive shared file
+ bla bla bla"""
 
 import os
-from os import access, R_OK
-from os.path import isfile
 import shutil
 import subprocess
 import tkinter as tk
-from tkinter import filedialog
+import tkinter.filedialog
 import re
 
 DIR_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -26,11 +24,9 @@ while True:
 		root = tk.Tk()
 		root.withdraw()
 		root.update()
-		EMAIL_FILE = filedialog.askopenfilename()
+		EMAIL_FILE = tk.filedialog.askopenfilename()
 		root.destroy()
-		if os.stat(EMAIL_FILE).st_size > 0:
-			break
-		if isfile(EMAIL_FILE) and access(EMAIL_FILE, R_OK):
+		if os.stat(EMAIL_FILE).st_size > 0 and os.path.isfile(EMAIL_FILE) and os.access(EMAIL_FILE, os.R_OK):
 			break
 	except OSError:
 		pass
@@ -86,32 +82,33 @@ with open(EMAIL_FILE, "r") as file_obj:
 
 		# On considere que l'utilisateur writer est aussi reader
 		id_file_list = get_driveidfilelist(line.rstrip('\n'))
-
-		if (len(id_file_list) -1) == 0:
+		nb_file_list = len(id_file_list) - 1
+		if (nb_file_list) == 0:
 			print("no shared access found: " + line.rstrip('\n'))
 			continue
 
 		list_path_file = DIR_PATH + "/" + line.rstrip('\n') +".txt"
 
 		print("\nuser: " + line.rstrip('\n'))
-		print("number of files: " + str(len(id_file_list) - 1))
+		print("number of files: " + str(nb_file_list))
 
 		while True:
 			try:
-				answer = str(input("Voulez vous récupérer la liste des fichiers accessibles ? y/n: "))
-				if (answer.lower() == "y") or (answer.lower() == "n"):
+				access_answer = str(input("Voulez vous récupérer la liste des fichiers accessibles ? y/n: "))
+				if (access_answer.lower() == "y") or (access_answer.lower() == "n"):
 					break
 			except ValueError:
 				pass
 			print('\nIncorrect input, try again')
 
-		if answer.lower() == "y":
+		if access_answer.lower() == "y":
 			listpath_f = open(list_path_file, "a")
 			print('\nLoading data, please wait')
-			for id_file in id_file_list:
+			for item in id_file_list:
 				try:
-					print(get_drivefilepath(id_file.split(None, 1)[0])[6:].rstrip('\n') + " R")
-					listpath_f.write(get_drivefilepath(id_file.split(None, 1)[0])[6:].rstrip('\n'))
+					id_file = item.split(None, 1)[0]
+					print(get_drivefilepath(id_file)[6:].rstrip('\n') + " R")
+					listpath_f.write(get_drivefilepath(id_file)[6:].rstrip('\n') + "\n")
 				except IndexError:
 					pass
 				continue
@@ -122,20 +119,19 @@ with open(EMAIL_FILE, "r") as file_obj:
 
 		while True:
 			try:
-				answer = input("Voulez vous revoquer les droits des utilisateurs concernés ? y/n: ")
-				if (answer.lower() == "y") or (answer.lower() == "n"):
+				doit_answer = input("Voulez vous revoquer les droits des utilisateurs concernés ? y/n: ")
+				if (doit_answer.lower() == "y") or (doit_answer.lower() == "n"):
 					break
 			except ValueError:
 				pass
 			print('\nIncorrect input, try again')
 
-		if answer.lower() == "y":
+		if doit_answer.lower() == "y":
 			print('\nLoading data, please wait')
 			for id_file in id_file_list:
 				try:
 					# print("cmd : gdrive share revoke " + id_file.split(None, 1)[0] + " " + perm_id)
 					status = revoke_drivesharedaccess(perm_id, id_file.split(None, 1)[0])
-					print(status)
+					print(status[0])
 				except IndexError:
 					pass
-				continue
